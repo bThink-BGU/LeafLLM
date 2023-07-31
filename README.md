@@ -9,6 +9,9 @@ The extension originated from [GPT4Overleaf](https://github.com/e3ntity/gpt4over
 3. Enable developer mode
 4. Click "Load unpacked" and select the repository folder
 
+## Installation from Chrome Web Store
+The extension is still under review.
+
 ## Configuration
 The plugin can be configured by clicking the plugin button in the Chrome toolbar. It requires inserting an API key from [OpenAI](https://platform.openai.com/account/api-keys). You also need to choose which tools you wish to enable.
 
