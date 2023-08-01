@@ -19,13 +19,13 @@ The plugin can be configured by clicking the plugin button in the Chrome toolbar
 These are the tools that are currently available:
 
 ### Auto-complete
-Select a text and press `Alt+c` to trigger the auto-complete tool.
+Select a text and press `Alt+C` to trigger the auto-complete tool.
 
 ### Improve
-Select a text and press `Alt+i` to trigger the improvement tool. The original text will be commented out and the improved text will be inserted below it.
+Select a text and press `Alt+I` to trigger the improvement tool. The original text will be commented out and the improved text will be inserted below it.
 
 ### Ask
-Select a text and press `Alt+a` to trigger the ask tool. The original text will be deleted and the answer will be inserted in its place. 
+Select a text and press `Alt+A` to trigger the ask tool. The original text will be deleted and the answer will be inserted in its place. 
 
 For example: "Create a table 4x3 that the first row is bold face" will be replaced with, e.g.,:
 ```latex

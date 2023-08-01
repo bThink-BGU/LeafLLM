@@ -90,7 +90,7 @@ function commentText(text) {
 }
 
 async function improveTextHandler(openAI) {
-  if (!(await settingIsEnabled('textImprovement'))) return
+  if (!(await settingIsEnabled('textImprovement'))) throw new Error('Text improvement is not enabled.')
   const selection = window.getSelection()
   const selectedText = selection.toString()
   if (!selectedText) return
@@ -100,7 +100,7 @@ async function improveTextHandler(openAI) {
 }
 
 async function completeTextHandler(openAI) {
-  if (!(await settingIsEnabled('textCompletion'))) return
+  if (!(await settingIsEnabled('textCompletion'))) throw new Error('Text completion is not enabled.')
   const selection = window.getSelection()
   const selectedText = selection.toString()
   if (!selectedText) return
@@ -109,7 +109,7 @@ async function completeTextHandler(openAI) {
 }
 
 async function askHandler(openAI) {
-  if (!(await settingIsEnabled('textAsk'))) return
+  if (!(await settingIsEnabled('textAsk'))) throw new Error('Text ask is not enabled.')
   const selection = window.getSelection()
   const selectedText = selection.toString()
   if (!selectedText) return
@@ -129,21 +129,20 @@ function setAPIKey(key) {
   currentAPIKey = key
   if (currentAPIKey) {
     openAI = new OpenAIAPI(currentAPIKey)
-    console.log('AI4Overleaf: OpenAI API key set, enabling AI4Overleaf features.')
+    console.log('LeafLLM: OpenAI API key set, enabling LeafLLM features.')
   } else {
     openAI = undefined
-    console.log('AI4Overleaf: OpenAI API key is not set, AI4Overleaf features are disabled.')
+    console.log('LeafLLM: OpenAI API key is not set, LeafLLM features are disabled.')
   }
 }
 
 function handleCommand(command) {
-  console.log('Handling command')
   if (command === 'Improve') {
-    improveTextHandler(openAI)
+    improveTextHandler(openAI).catch(e => console.error(`Failed to execute the '${command}' command. Error message: ${e}`))
   } else if (command === 'Complete') {
-    completeTextHandler(openAI)
+    completeTextHandler(openAI).catch(e => console.error(`Failed to execute the '${command}' command. Error message: ${e}`))
   } else if (command === 'Ask') {
-    askHandler(openAI)
+    askHandler(openAI).catch(e => console.error(`Failed to execute the '${command}' command. Error message: ${e}`))
   }
 }
 
