@@ -138,12 +138,31 @@ function setAPIKey(key) {
 
 function handleCommand(command) {
   if (command === 'Improve') {
-    improveTextHandler(openAI).catch(e => console.error(`Failed to execute the '${command}' command. Error message: ${e}`))
+    improveTextHandler(openAI).catch(e => error(`Failed to execute the '${command}' command. Error message: ${e}`))
   } else if (command === 'Complete') {
-    completeTextHandler(openAI).catch(e => console.error(`Failed to execute the '${command}' command. Error message: ${e}`))
+    completeTextHandler(openAI).catch(e => error(`Failed to execute the '${command}' command. Error message: ${e}`))
   } else if (command === 'Ask') {
-    askHandler(openAI).catch(e => console.error(`Failed to execute the '${command}' command. Error message: ${e}`))
+    askHandler(openAI).catch(e => error(`Failed to execute the '${command}' command. Error message: ${e}`))
   }
+}
+
+function error(msg) {
+  customAlert(msg)
+  console.error(`LeafLLM: ${msg}`)
+}
+
+function customAlert(msg,duration)
+{
+  if(!duration) duration = 4000;
+  var styler = document.createElement("div");
+  styler.setAttribute("class","system-message-content alert");
+  styler.setAttribute("style","z-index:10000;position:absolute;top:20%;left:50%;border: solid 5px Red;background-color:#444;color:Silver");
+  styler.innerHTML = msg;
+  setTimeout(function()
+  {
+    styler.parentNode.removeChild(styler);
+  },duration);
+  document.body.appendChild(styler);
 }
 
 chrome.runtime.onMessage.addListener(
