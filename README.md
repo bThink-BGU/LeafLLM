@@ -69,7 +69,9 @@ Entry 7 & Entry 8 & Entry 9\\
 ```
 
 ## Issues
-If you encounter any issues, please open an issue in the project's repository.
+If nothing happens when you use the plugin, verify that the plugin's shortcuts are not in conflict with other plugins' shortcuts [here](chrome://extensions/shortcuts).
+
+If you encounter any problem/question, please open an issue in the project's repository.
 
 ## Privacy
-The plugin does not collect any data. The only data that is sent is the text that you select and the API key that you provide. The data is sent to OpenAI's servers only.
+The plugin saves its configuration locally on the users' computer. The plugin sends the API key and the selected text to OpenAI only, and only for the purpose it was made for (i.e., completing and improving text and asking GPT questions). The plugin's authors are not responsible for what OpenAI do with this data. The plugin's authors do not collect any data from the plugin's users.
