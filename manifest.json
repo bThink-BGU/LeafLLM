@@ -5,7 +5,7 @@
   },
   "content_scripts": [
     {
-      "js": ["scripts/jquery.js", "scripts/content.js"],
+      "js": ["scripts/jquery.js", "scripts/content.js", "scripts/utils.js"],
       "matches": ["https://*.overleaf.com/project/*"]
     }
   ],
@@ -36,11 +36,12 @@
     }
   },
   "background": {
-    "service_worker": "scripts/service-worker.js"
+    "service_worker": "scripts/service-worker.js",
+    "type": "module"
   },
   "permissions": ["storage", "tabs"],
   "manifest_version": 3,
   "name": "LeafLLM",
   "homepage_url": "https://github.com/achiyae/LeafLLM",
-  "version": "1.1.0"
+  "version": "1.2.0"
 }
