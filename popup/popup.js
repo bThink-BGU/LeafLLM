@@ -1,3 +1,5 @@
+import {setSetting} from '../scripts/utils.js'
+
 const apiKeyRegex = /sk-[a-zA-Z0-9]{48}/
 
 function addMessage(message) {
@@ -12,42 +14,23 @@ function clearMessages() {
   $('#message-box').empty()
 }
 
-
-/**
- * Set a setting in storage {@link https://developer.chrome.com/docs/extensions/reference/storage/#type-StorageArea:~:text=to%20the%20callback.-,set,-void}
- * @param key
- * @param value
- * @param callback
- */
-async function setSetting(key, value, callback = null) {
-  let obj = {}
-  obj[key] = value
-  chrome.storage.local.set(obj, callback).catch(error => {
-    console.log(`Failed to set ${key} setting. Error: ${error}`)
-  })
-}
-
-/**
- * Get a setting from storage
- * @param {string | string[] | object} [keys=null] - The keys to get (see {@link https://developer.chrome.com/docs/extensions/reference/storage/#usage})
- * @param {function} [callback=null] - Callback function
- */
-async function getSetting(keys = null, callback = null) {
-  return chrome.storage.local.get(keys, callback)
-}
-
 async function refreshStorage() {
-  getSetting('openAIAPIKey').then(({ openAIAPIKey }) => {
+  chrome.storage.local.get('openAIAPIKey').then(({ openAIAPIKey }) => {
     $('#api-token-form .api-token-status').text(chrome.runtime.lastError || !openAIAPIKey ? 'not set' : 'set')
   })
 
-  getSetting(['Improve', 'Complete', 'Ask']).then(settings =>
-    settings.forEach(({ key, shortcut, status }) => {
-    if (status === 'error') {
-      addErrorMessage(`${shortcut} could not be bound for the ${key} command. You can set it manually at chrome://extensions/shortcuts.`)
+  chrome.storage.local.get(['Improve', 'Complete', 'Ask']).then((settings) => {
+    let bindingFailures = Object.values(settings)
+    .filter(({ status }) => status === 'error')
+    .map(({ key, shortcut }) => `${shortcut} for ${key}`)
+    .join(', ')
+    if (bindingFailures.length > 0) {
+      addErrorMessage(`Could not bound the following shortcuts:\n${bindingFailures}.\nYou can set it manually at <a href="chrome://extensions/shortcuts">chrome://extensions/shortcuts</a>.`)
     }
-    $(`#settings-form input[name='text-${key}']:checkbox`).prop('checked', status === 'checked')
-  }))
+    Object.values(settings).forEach(({ key, status }) => {
+      $(`#settings-form input[name='text-${key}']:checkbox`).prop('checked', status === 'enabled')
+    })
+  })
 }
 
 async function handleAPITokenSet(event) {
@@ -66,14 +49,12 @@ async function handleAPITokenSet(event) {
   }
 
   try {
-    await chrome.storage.local.set({ openAIAPIKey })
+    chrome.storage.local.set({ openAIAPIKey }).then(refreshStorage)
   } catch (error) {
     console.log(error)
     addErrorMessage('Failed to set API Token.')
     return
   }
-
-  await refreshStorage()
 }
 
 async function handleAPITokenClear(event) {
@@ -83,14 +64,12 @@ async function handleAPITokenClear(event) {
   clearMessages()
 
   try {
-    await chrome.storage.local.remove('openAIAPIKey')
+    chrome.storage.local.remove('openAIAPIKey').then(refreshStorage)
   } catch (error) {
     console.log(error)
     addErrorMessage('Failed to remove API Token.')
     return
   }
-
-  await refreshStorage()
 }
 
 function makeHandleSettingChange(key) {
@@ -100,11 +79,13 @@ function makeHandleSettingChange(key) {
     clearMessages()
 
     const value = event.target.checked
-    getSetting(key).then(setting => {
-      setting.status = value ? 'checked' : 'unchecked'
-      setSetting(setting.key, setting)
+    chrome.storage.local.get(key).then(setting => {
+      if(setting[key].status !== 'error') {
+        setting[key].status = value ? 'enabled' : 'disabled'
+        setSetting(setting[key].key, setting[key])
+      }
+      return refreshStorage()
     })
-    // await refreshStorage()
   }
 }
 
@@ -112,8 +93,9 @@ $(document).ready(async function () {
   $('#api-token-form .submit').on('click', handleAPITokenSet)
   $('#api-token-form .clear').on('click', handleAPITokenClear)
 
-  getSetting(['Improve', 'Complete', 'Ask']).forEach(key => {
-    $(`#settings-form input[name='text-${name}']:checkbox`).on('change', makeHandleSettingChange(key))
+  let commands = ['Improve', 'Complete', 'Ask']
+  commands.forEach((key) => {
+    $(`#settings-form input[name='text-${key}']:checkbox`).on('change', makeHandleSettingChange(key))
   })
-  return refreshStorage()
+  await refreshStorage()
 })

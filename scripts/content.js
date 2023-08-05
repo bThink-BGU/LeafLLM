@@ -1,3 +1,4 @@
+
 class OpenAIAPI {
   static defaultModel = 'text-davinci-003'
 

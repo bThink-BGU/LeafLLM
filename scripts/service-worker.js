@@ -1,3 +1,5 @@
+import {setSetting} from './utils.js'
+
 const settings = [
   { key: 'Complete', shortcut: 'Alt+C', status: 'enabled', type: 'Command' },
   { key: 'Improve', shortcut: 'Alt+I', status: 'enabled', type: 'Command' },
@@ -43,29 +45,6 @@ async function checkCommandShortcuts() {
       }
     }
   })
-}
-
-/**
- * Set a setting in storage {@link https://developer.chrome.com/docs/extensions/reference/storage/#type-StorageArea:~:text=to%20the%20callback.-,set,-void}
- * @param key
- * @param value
- * @param callback
- */
-async function setSetting(key, value, callback = null) {
-  let obj = {}
-  obj[key] = value
-  chrome.storage.local.set(obj, callback).catch(error => {
-    console.log(`Failed to set ${key} setting. Error: ${error}`)
-  })
-}
-
-/**
- * Get a setting from storage
- * @param {string | string[] | object} [keys=null] - The keys to get (see {@link https://developer.chrome.com/docs/extensions/reference/storage/#usage})
- * @param {function} [callback=null] - Callback function
- */
-async function getSetting(keys = null, callback = null) {
-  return chrome.storage.local.get(keys, callback)
 }
 
 async function setup() {
