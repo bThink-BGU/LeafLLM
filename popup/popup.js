@@ -27,8 +27,11 @@ async function refreshStorage() {
     if (bindingFailures.length > 0) {
       addErrorMessage(`Could not bound the following shortcuts:\n${bindingFailures}.\nYou can set it manually at <a href="chrome://extensions/shortcuts">chrome://extensions/shortcuts</a>.`)
     }
-    Object.values(settings).forEach(({ key, status }) => {
+    Object.values(settings).forEach(({ key, status, shortcut }) => {
       $(`#settings-form input[name='text-${key}']:checkbox`).prop('checked', status === 'enabled')
+      let shortcut2 = status === 'error' ? 'not set' : shortcut
+      console.log(`writing ${shortcut2} to shortcut-${key}`)
+      $(`#shortcut-${key}`).html(`<span>${shortcut2}</span>`)
     })
   })
 }
@@ -51,7 +54,6 @@ async function handleAPITokenSet(event) {
   try {
     chrome.storage.local.set({ openAIAPIKey }).then(refreshStorage)
   } catch (error) {
-    console.log(error)
     addErrorMessage('Failed to set API Token.')
     return
   }
