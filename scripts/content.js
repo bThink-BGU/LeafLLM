@@ -99,8 +99,8 @@ async function completeTextHandler(openAI) {
   const selection = window.getSelection()
   const selectedText = selection.toString()
   if (!selectedText) return
-  const editedText = await openAI.completeText(selectedText)
-  replaceSelectedText(selectedText + editedText, selection)
+  const editedText = (await openAI.completeText(selectedText)).trimStart()
+  replaceSelectedText(selectedText + '\n' + editedText, selection)
 }
 
 async function askHandler(openAI) {
@@ -108,7 +108,7 @@ async function askHandler(openAI) {
   const selection = window.getSelection()
   const selectedText = selection.toString()
   if (!selectedText) return
-  const editedText = await openAI.completeText('In Latex, ' + selectedText)
+  const editedText = (await openAI.completeText('In latex, ' + selectedText)).trimStart()
   replaceSelectedText(editedText, selection)
 }
 
