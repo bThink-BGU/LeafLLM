@@ -1,5 +1,3 @@
-import {setSetting} from './utils.js'
-
 const settings = [
   { key: 'Complete', shortcut: 'Alt+C', status: 'enabled', type: 'Command' },
   { key: 'Improve', shortcut: 'Alt+I', status: 'enabled', type: 'Command' },
@@ -9,7 +7,7 @@ const settings = [
 async function sendMessage(message) {
   const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true })
   if (tab == null || tab.url?.startsWith('chrome://')) return undefined
-  const response = await chrome.tabs.sendMessage(tab.id, message)
+  chrome.tabs.sendMessage(tab.id, message)
   // do something with response here, not outside the function
   // console.log(response)
 }
@@ -41,7 +39,7 @@ async function checkCommandShortcuts() {
         if (shortcut === '') {
           command.status = 'error'
         }
-        setSetting(command.key, command)
+        chrome.storage.local.set({ [command.key]: command })
       }
     }
   })

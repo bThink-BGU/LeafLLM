@@ -39,9 +39,8 @@ class OpenAIAPI {
       temperature: 0.5
     }
 
-    const result = await this.query('completions', data)
-
-    return result[0].text
+    return this.query('completions', data)
+      .then(result => result[0].text)
   }
 
   async improveText(text) {
@@ -54,9 +53,8 @@ class OpenAIAPI {
       temperature: 0.5
     }
 
-    const result = await this.query('edits', data)
-
-    return result[0].text
+    return this.query('edits', data)
+      .then(result => result[0].text)
   }
 }
 
@@ -70,14 +68,10 @@ function replaceSelectedText(replacementText, selection) {
   }
 }
 
-async function settingIsEnabled(setting) {
-  let result
-  try {
-    result = await chrome.storage.local.get(setting)
-  } catch (error) {
-    return false
-  }
-  return result[setting]
+async function settingIsEnabled(key) {
+  return chrome.storage.local.get(key)
+    .then(setting => 'enabled' === setting[key].status)
+    .catch(() => false)
 }
 
 function commentText(text) {
@@ -91,7 +85,7 @@ function commentText(text) {
 }
 
 async function improveTextHandler(openAI) {
-  if (!(await settingIsEnabled('textImprovement'))) throw new Error('Text improvement is not enabled.')
+  if (!(await settingIsEnabled('Improve'))) throw new Error('Text improvement is not enabled.')
   const selection = window.getSelection()
   const selectedText = selection.toString()
   if (!selectedText) return
@@ -101,7 +95,7 @@ async function improveTextHandler(openAI) {
 }
 
 async function completeTextHandler(openAI) {
-  if (!(await settingIsEnabled('textCompletion'))) throw new Error('Text completion is not enabled.')
+  if (!(await settingIsEnabled('Complete'))) throw new Error('Text completion is not enabled.')
   const selection = window.getSelection()
   const selectedText = selection.toString()
   if (!selectedText) return
@@ -110,7 +104,7 @@ async function completeTextHandler(openAI) {
 }
 
 async function askHandler(openAI) {
-  if (!(await settingIsEnabled('textAsk'))) throw new Error('Text ask is not enabled.')
+  if (!(await settingIsEnabled('Ask'))) throw new Error('Ask is not enabled.')
   const selection = window.getSelection()
   const selectedText = selection.toString()
   if (!selectedText) return
@@ -130,26 +124,36 @@ function setAPIKey(key) {
   currentAPIKey = key
   if (currentAPIKey) {
     openAI = new OpenAIAPI(currentAPIKey)
-    console.log('LeafLLM: OpenAI API key set, enabling LeafLLM features.')
+    log('OpenAI API key set, enabling LeafLLM features.')
   } else {
     openAI = undefined
-    console.log('LeafLLM: OpenAI API key is not set, LeafLLM features are disabled.')
+    log('OpenAI API key is not set, LeafLLM features are disabled.')
   }
 }
 
 function handleCommand(command) {
   if (command === 'Improve') {
-    improveTextHandler(openAI).catch(e => error(`Failed to execute the '${command}' command. Error message: ${e}`))
+    improveTextHandler(openAI).catch(e => error(`Failed to execute the '${command}' command.`, e))
   } else if (command === 'Complete') {
-    completeTextHandler(openAI).catch(e => error(`Failed to execute the '${command}' command. Error message: ${e}`))
+    completeTextHandler(openAI).catch(e => error(`Failed to execute the '${command}' command.`, e))
   } else if (command === 'Ask') {
-    askHandler(openAI).catch(e => error(`Failed to execute the '${command}' command. Error message: ${e}`))
+    askHandler(openAI).catch(e => error(`Failed to execute the '${command}' command.`, e))
   }
 }
 
-function error(msg) {
+function error(msg, error) {
+  if(error) {
+    msg += ` Error message: ${error.message}`
+    if(error.cause) {
+      console.error(`\nCause: ${JSON.stringify(error.cause)}`)
+    }
+  }
   customAlert(msg)
   console.error(`LeafLLM: ${msg}`)
+}
+
+function log(msg) {
+  console.log(`LeafLLM: ${msg}`)
 }
 
 function customAlert(msg,duration)
@@ -168,7 +172,7 @@ function customAlert(msg,duration)
 
 chrome.runtime.onMessage.addListener(
   function (request, sender, sendResponse) {
-    console.log(`Received request: ${JSON.stringify(request)}`)
+    log(`Received request: ${JSON.stringify(request)}`)
     if (request.command === 'setup') {
       setAPIKey(request.apiKey)
     } else {
