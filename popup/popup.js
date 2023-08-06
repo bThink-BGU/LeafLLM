@@ -97,5 +97,10 @@ $(document).ready(async function () {
   commands.forEach((key) => {
     $(`#settings-form input[name='text-${key}']:checkbox`).on('change', makeHandleSettingChange(key))
   })
+
+  $('body').on('click', 'a', function(){
+    chrome.tabs.create({url: $(this).attr('href')});
+    return false;
+  });
   await refreshStorage()
 })
