@@ -1,5 +1,3 @@
-import {setSetting} from '../scripts/utils.js'
-
 const apiKeyRegex = /sk-[a-zA-Z0-9]{48}/
 
 function addMessage(message) {
@@ -21,14 +19,16 @@ async function refreshStorage() {
 
   chrome.storage.local.get(['Improve', 'Complete', 'Ask']).then((settings) => {
     let bindingFailures = Object.values(settings)
-    .filter(({ status }) => status === 'error')
-    .map(({ key, shortcut }) => `${shortcut} for ${key}`)
-    .join(', ')
+      .filter(({ status }) => status === 'error')
+      .map(({ key, shortcut }) => `${shortcut} for ${key}`)
+      .join(', ')
     if (bindingFailures.length > 0) {
-      addErrorMessage(`Could not bound the following shortcuts:\n${bindingFailures}.\nYou can set it manually at <a href="chrome://extensions/shortcuts">chrome://extensions/shortcuts</a>.`)
+      addErrorMessage(`Could not bind the following shortcuts:\n${bindingFailures}.\nYou can set it manually at <a href="chrome://extensions/shortcuts">chrome://extensions/shortcuts</a>.`)
     }
-    Object.values(settings).forEach(({ key, status }) => {
+    Object.values(settings).forEach(({ key, status, shortcut }) => {
       $(`#settings-form input[name='text-${key}']:checkbox`).prop('checked', status === 'enabled')
+      let shortcut2 = status === 'error' ? 'not set' : shortcut
+      $(`#shortcut-${key}`).html(`<span>${shortcut2}</span>`)
     })
   })
 }
@@ -48,13 +48,9 @@ async function handleAPITokenSet(event) {
     return
   }
 
-  try {
-    chrome.storage.local.set({ openAIAPIKey }).then(refreshStorage)
-  } catch (error) {
-    console.log(error)
-    addErrorMessage('Failed to set API Token.')
-    return
-  }
+  chrome.storage.local.set({ openAIAPIKey })
+    .then(refreshStorage)
+    .catch((error) => addErrorMessage(`Failed to remove API Token. Error: ${error}`))
 }
 
 async function handleAPITokenClear(event) {
@@ -63,29 +59,24 @@ async function handleAPITokenClear(event) {
 
   clearMessages()
 
-  try {
-    chrome.storage.local.remove('openAIAPIKey').then(refreshStorage)
-  } catch (error) {
-    console.log(error)
-    addErrorMessage('Failed to remove API Token.')
-    return
-  }
+  chrome.storage.local.remove('openAIAPIKey')
+    .then(refreshStorage)
+    .catch((error) => addErrorMessage(`Failed to remove API Token. Error: ${error}`))
 }
 
-function makeHandleSettingChange(key) {
+async function makeHandleSettingChange(key) {
   return async (event) => {
     event.preventDefault()
     event.stopPropagation()
     clearMessages()
 
     const value = event.target.checked
-    chrome.storage.local.get(key).then(setting => {
-      if(setting[key].status !== 'error') {
-        setting[key].status = value ? 'enabled' : 'disabled'
-        setSetting(setting[key].key, setting[key])
-      }
-      return refreshStorage()
-    })
+    const setting = await chrome.storage.local.get(key)
+    if (setting[key].status !== 'error') {
+      setting[key].status = value ? 'enabled' : 'disabled'
+      await chrome.storage.local.set({ [key]: setting[key] })
+    }
+    return refreshStorage()
   }
 }
 
@@ -97,10 +88,5 @@ $(document).ready(async function () {
   commands.forEach((key) => {
     $(`#settings-form input[name='text-${key}']:checkbox`).on('change', makeHandleSettingChange(key))
   })
-
-  $('body').on('click', 'a', function(){
-    chrome.tabs.create({url: $(this).attr('href')});
-    return false;
-  });
-  await refreshStorage()
+  return refreshStorage()
 })

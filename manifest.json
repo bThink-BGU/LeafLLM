@@ -5,7 +5,7 @@
   },
   "content_scripts": [
     {
-      "js": ["scripts/jquery.js", "scripts/content.js", "scripts/utils.js"],
+      "js": ["scripts/jquery.js", "scripts/content.js"],
       "matches": ["https://*.overleaf.com/project/*"]
     }
   ],
@@ -36,8 +36,7 @@
     }
   },
   "background": {
-    "service_worker": "scripts/service-worker.js",
-    "type": "module"
+    "service_worker": "scripts/service-worker.js"
   },
   "permissions": ["storage", "tabs"],
   "manifest_version": 3,

@@ -8,14 +8,15 @@ body {
 .extension-title {
   font-size: 24px;
   color: #4a4a4a;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .form-container {
   background-color: #fff;
   border-radius: 5px;
-  margin: 10px 0;
-  padding: 20px;
+  margin-bottom: 10px;
+  padding: 10px;
+
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
 }
 
@@ -38,6 +39,14 @@ body {
   margin-bottom: 10px;
 }
 
+.btn-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-left: 3px;
+  margin-right: 3px;
+}
+
 .btn {
   font-size: 14px;
   padding: 8px 16px;
@@ -46,9 +55,9 @@ body {
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  margin: 5px 0;
+  margin: 5px 5px 0 5px;
   transition: background-color 0.3s;
-  width: 300px;
+  width: 200px;
 }
 
 .btn:hover {
@@ -70,7 +79,6 @@ body {
 }
 
 #controls {
-  margin-top: 30px;
   display: flex;
   flex-direction: column;
 }
@@ -78,7 +86,8 @@ body {
 .control {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
+  margin-top: 5px;
 }
 
 .input {
@@ -103,7 +112,7 @@ body {
 .settings-text {
   font-size: 18px;
   color: #4a4a4a;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .settings-container {
@@ -115,7 +124,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 3px;
+  margin-top: 3px;
 }
 
 .settings-item-text {
@@ -126,8 +136,8 @@ body {
 .switch {
   position: relative;
   display: inline-block;
-  width: 60px;
-  height: 34px;
+  width: 40px;
+  height: 24px;
 }
 
 .switch input {
@@ -150,8 +160,8 @@ body {
 .slider:before {
   position: absolute;
   content: "";
-  height: 26px;
-  width: 26px;
+  height: 16px;
+  width: 16px;
   left: 4px;
   bottom: 4px;
   background-color: white;
@@ -163,11 +173,11 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-  transform: translateX(26px);
+  transform: translateX(16px);
 }
 
 .slider.round {
-  border-radius: 34px;
+  border-radius: 24px;
 }
 
 .slider.round:before {
