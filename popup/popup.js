@@ -17,17 +17,32 @@ async function refreshStorage() {
     $('#api-token-form .api-token-status').text(chrome.runtime.lastError || !openAIAPIKey ? 'not set' : 'set')
   })
 
+  const commands = await chrome.commands.getAll();
+
   chrome.storage.local.get(['Improve', 'Complete', 'Ask']).then((settings) => {
+    Object.values(settings).forEach(setting => {
+      let command = commands.filter(({ name }) => name === setting.key)[0]
+      if(command.shortcut !== setting.shortcut) {
+        setting.shortcut = command.shortcut;
+        if(setting.status === 'enabled' && setting.shortcut === '') {
+          setting.status = 'error'
+        }
+        chrome.storage.local.set({ [setting.key]: setting });
+      } else if(setting.status === 'enabled' && setting.shortcut === '') {
+        setting.status = 'error'
+        chrome.storage.local.set({ [setting.key]: setting })
+      }
+    })
     let bindingFailures = Object.values(settings)
       .filter(({ status }) => status === 'error')
-      .map(({ key, shortcut }) => `${shortcut} for ${key}`)
-      .join(', ')
+      .map(({ key }) => `${key}`)
+      .join(', ');
     if (bindingFailures.length > 0) {
       addErrorMessage(`Could not bind the following shortcuts:\n${bindingFailures}.\nYou can set it manually at <a href="chrome://extensions/shortcuts">chrome://extensions/shortcuts</a>.`)
     }
     Object.values(settings).forEach(({ key, status, shortcut }) => {
       $(`#settings-form input[name='text-${key}']:checkbox`).prop('checked', status === 'enabled')
-      let shortcut2 = status === 'error' ? 'not set' : shortcut
+      let shortcut2 = shortcut === '' ? 'not set' : shortcut
       $(`#shortcut-${key}`).html(`<span>${shortcut2}</span>`)
     })
   })
@@ -64,7 +79,7 @@ async function handleAPITokenClear(event) {
     .catch((error) => addErrorMessage(`Failed to remove API Token. Error: ${error}`))
 }
 
-async function makeHandleSettingChange(key) {
+function makeHandleSettingChange(key) {
   return async (event) => {
     event.preventDefault()
     event.stopPropagation()
@@ -72,10 +87,12 @@ async function makeHandleSettingChange(key) {
 
     const value = event.target.checked
     const setting = await chrome.storage.local.get(key)
-    if (setting[key].status !== 'error') {
+/*    let commandKey = await chrome.commands.getAll()
+    commandKey = commandKey.filter(({ name }) => name === key)[0]*/
+    // if (setting[key].status !== 'error') {
       setting[key].status = value ? 'enabled' : 'disabled'
       await chrome.storage.local.set({ [key]: setting[key] })
-    }
+    // }
     return refreshStorage()
   }
 }

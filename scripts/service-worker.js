@@ -20,13 +20,7 @@ function addListener(commandName) {
   })
 }
 
-chrome.runtime.onInstalled.addListener((reason) => {
-  if (reason.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    checkCommandShortcuts()
-  }
-})
-
-// Only use this function during the initial install phase. After
+// Only use this function during the initial installation phase. After
 // installation the user may have intentionally unassigned commands.
 // Example for install commands: [{"description":"","name":"_execute_action","shortcut":""},{"description":"Use the selected text to ask GPT. It adds to the beginning of the selected text: 'In Latex, '","name":"Ask","shortcut":""},{"description":"Complete selected text","name":"Complete","shortcut":""},{"description":"Improve selected text","name":"Improve","shortcut":""}]
 async function checkCommandShortcuts() {
@@ -44,6 +38,12 @@ async function checkCommandShortcuts() {
     }
   })
 }
+
+chrome.runtime.onInstalled.addListener((reason) => {
+  if (reason.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+    checkCommandShortcuts()
+  }
+})
 
 async function setup() {
   addListener('Improve')
