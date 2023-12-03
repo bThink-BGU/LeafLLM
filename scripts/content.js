@@ -181,6 +181,8 @@ chrome.runtime.onMessage.addListener(
           setAPIKey(openAIAPIKey)
           if (openAI) {
             handleCommand(request.command)
+          } else {
+            error('OpenAI API key is not set, LeafLLM features are disabled.')
           }
         })
       } else {
