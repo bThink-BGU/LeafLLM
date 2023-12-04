@@ -1,6 +1,6 @@
 
 class OpenAIAPI {
-  static defaultModel = 'text-davinci-003'
+  static defaultModel = 'gpt-3.5-turbo'
 
   constructor(apiKey) {
     this.apiKey = apiKey
