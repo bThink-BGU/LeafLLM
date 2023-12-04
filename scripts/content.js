@@ -11,6 +11,8 @@ class OpenAIAPI {
       const url = `https://api.openai.com/v1/${endpoint}`
 
       if (!data.model) data.model = OpenAIAPI.defaultModel
+      if (!data.n) data.n = 1
+      if (!data.temperature) data.temperature = 0.5
 
       const xhr = new XMLHttpRequest()
       xhr.open('POST', url, true)
@@ -34,27 +36,38 @@ class OpenAIAPI {
   async completeText(text) {
     const data = {
       max_tokens: 512,
-      prompt: text,
-      n: 1,
-      temperature: 0.5
+      messages: [
+        { role: 'system', content: 'You are an assistant in a Latex editor' },
+        { role: 'user', 'content': text }
+      ],
     }
 
-    return this.query('completions', data)
-      .then(result => result[0].text)
+    return this.query('chat/completions', data)
+      .then(result => result[0]['message'].content)
   }
 
   async improveText(text) {
     const data = {
-      model: 'code-davinci-edit-001',
-      input: text,
-      instruction:
-        'Correct any spelling mistakes, grammar mistakes, and improve the overall style of the (latex) text.',
-      n: 1,
-      temperature: 0.5
+      messages: [
+        { role: 'system', content: 'You are an assistant in a Latex editor' },
+        { role: 'user', 'content': 'Improve the following text:\n'+text }],
     }
 
-    return this.query('edits', data)
-      .then(result => result[0].text)
+    return this.query('chat/completions', data)
+      .then(result => result[0]['message'].content)
+  }
+
+  async ask(text) {
+    const data = {
+      max_tokens: 512,
+      messages: [
+        { role: 'system', content: 'You are an assistant in a Latex editor. Answer questions without introduction/explanations' },
+        { role: 'user', 'content': text }
+      ],
+    }
+
+    return this.query('chat/completions', data)
+      .then(result => result[0]['message'].content)
   }
 }
 
@@ -108,7 +121,7 @@ async function askHandler(openAI) {
   const selection = window.getSelection()
   const selectedText = selection.toString()
   if (!selectedText) return
-  const editedText = (await openAI.completeText('In latex, ' + selectedText)).trimStart()
+  const editedText = (await openAI.ask(selectedText)).trimStart()
   replaceSelectedText(editedText, selection)
 }
 
