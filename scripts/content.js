@@ -37,7 +37,7 @@ class OpenAIAPI {
     const data = {
       max_tokens: 512,
       messages: [
-        { role: 'system', content: 'You are an assistant in a Latex editor' },
+        { role: 'system', content: 'You are an assistant in a Latex editor that continues the given text. No need to rewrite the given text' },
         { role: 'user', 'content': text }
       ],
     }
