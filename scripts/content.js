@@ -18,15 +18,26 @@ class OpenAIAPI {
       xhr.open('POST', url, true)
       xhr.setRequestHeader('Content-Type', 'application/json')
       xhr.setRequestHeader('Authorization', `Bearer ${this.apiKey}`)
-      xhr.onreadystatechange = function () {
-        if (xhr.readyState !== 4) return
-        if (xhr.status !== 200) return reject('Failed to query OpenAI API.')
-
-        const jsonResponse = JSON.parse(xhr.responseText)
-
-        if (!jsonResponse.choices) return reject('Failed to query OpenAI API.')
-
-        return resolve(jsonResponse.choices)
+      xhr.onerror = function () {
+        reject('Failed to query OpenAI API: network error.')
+      }
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          let jsonResponse
+          try {
+            jsonResponse = JSON.parse(xhr.responseText)
+          } catch (e) {
+            reject('Failed to query OpenAI API, cannot parse response:\n' + e + '\n' + xhr.responseText)
+            return
+          }
+          if (jsonResponse.hasOwnProperty('choices')) {
+            resolve(jsonResponse.choices)
+          } else {
+            reject('Failed to query OpenAI API: invalid response: ' + jsonResponse)
+          }
+        } else {
+          reject('Failed to query OpenAI API: invalid status: ' + xhr.status + ' - ' + xhr.responseText)
+        }
       }
 
       xhr.send(JSON.stringify(data))
@@ -156,10 +167,7 @@ function handleCommand(command) {
 
 function error(msg, error) {
   if(error) {
-    msg += ` Error message: ${error.message}`
-    if(error.cause) {
-      console.error(`\nCause: ${JSON.stringify(error.cause)}`)
-    }
+    msg += ` Error message: ${JSON.stringify(error)}`
   }
   customAlert(msg)
   console.error(`LeafLLM: ${msg}`)
