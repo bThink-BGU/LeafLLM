@@ -1,7 +1,39 @@
+// Changing defaultConfigurations requires changing popup/popup.js
+const defaultConfigurations = {
+  openai: {
+    url: 'https://api.openai.com/v1/chat/completions',
+    base: {
+      n: 1,
+      temperature: 0.5,
+      model: 'gpt-3.5-turbo'
+    },
+    Complete: {
+      max_tokens: 512,
+      messages: [{
+        role: 'system',
+        content: 'You are an assistant in a Latex editor that continues the given text. No need to rewrite the given text'
+      }]
+    },
+    Improve: {
+      messages: [{
+        role: 'system',
+        content: 'You are an assistant in a Latex editor that improves the given text'
+      }]
+    },
+    Ask: {
+      messages: [{
+        role: 'system',
+        content: 'You are an assistant in a Latex editor. Answer questions without introduction/explanations'
+      }]
+    }
+  }
+}
+
 const settings = [
   { key: 'Complete', shortcut: 'Alt+C', status: 'enabled', type: 'Command' },
   { key: 'Improve', shortcut: 'Alt+I', status: 'enabled', type: 'Command' },
-  { key: 'Ask', shortcut: 'Alt+A', status: 'enabled', type: 'Command' }
+  { key: 'Ask', shortcut: 'Alt+A', status: 'enabled', type: 'Command' },
+  { key: 'RequestConfiguration', value: defaultConfigurations, type: 'Configuration' }
 ]
 
 async function sendMessage(message) {
@@ -42,6 +74,14 @@ async function checkCommandShortcuts() {
 chrome.runtime.onInstalled.addListener((reason) => {
   if (reason.reason === chrome.runtime.OnInstalledReason.INSTALL) {
     checkCommandShortcuts()
+    chrome.storage.local.set({ RequestConfiguration: defaultConfigurations })
+  } else if (reason.reason === chrome.runtime.OnInstalledReason.UPDATE) {
+    let newVersion = chrome.runtime.getManifest().version
+    let oldVersion = reason.previousVersion
+    let oldVersionArray = oldVersion.split('.')
+    if (parseInt(oldVersionArray[0]) === 1 && parseInt(oldVersionArray[1]) < 4) {
+      chrome.storage.local.set({ RequestConfiguration: defaultConfigurations })
+    }
   }
 })
 

@@ -1,4 +1,45 @@
+// Changing defaultConfigurations requires changing service-worker.js
+const defaultConfigurations = {
+  openai: {
+    url: 'https://api.openai.com/v1/chat/completions',
+    base: {
+      n: 1,
+      temperature: 0.5,
+      model: 'gpt-3.5-turbo'
+    },
+    Complete: {
+      max_tokens: 512,
+      messages: [{
+        role: 'system',
+        content: 'You are an assistant in a Latex editor that continues the given text. No need to rewrite the given text'
+      }]
+    },
+    Improve: {
+      messages: [{
+        role: 'system',
+        content: 'You are an assistant in a Latex editor that improves the given text'
+      }]
+    },
+    Ask: {
+      messages: [{
+        role: 'system',
+        content: 'You are an assistant in a Latex editor. Answer questions without introduction/explanations'
+      }]
+    }
+  }
+}
+
 const apiKeyRegex = /sk-[a-zA-Z0-9]{48}/
+const jsonEditor = createJsonEditor()
+
+function createJsonEditor() {
+  return new JSONEditor($('#json-editor')[0], {
+    mode: 'code', // Use code mode for better editing
+    onChange: function () {
+      $('#saveConfig').prop('disabled', false);
+    }
+  })
+}
 
 function addMessage(message) {
   $('#message-box').append(`<div class="message">${message}</div>`)
@@ -17,18 +58,23 @@ async function refreshStorage() {
     $('#api-token-form .api-token-status').text(chrome.runtime.lastError || !openAIAPIKey ? 'not set' : 'set')
   })
 
-  const commands = await chrome.commands.getAll();
+  const commands = await chrome.commands.getAll()
+
+  chrome.storage.local.get(['RequestConfiguration']).then((settings) => {
+    jsonEditor.set(settings.RequestConfiguration)
+    $('#saveConfig').prop('disabled', true);
+  })
 
   chrome.storage.local.get(['Improve', 'Complete', 'Ask']).then((settings) => {
     Object.values(settings).forEach(setting => {
       let command = commands.filter(({ name }) => name === setting.key)[0]
-      if(command.shortcut !== setting.shortcut) {
-        setting.shortcut = command.shortcut;
-        if(setting.status === 'enabled' && setting.shortcut === '') {
+      if (command.shortcut !== setting.shortcut) {
+        setting.shortcut = command.shortcut
+        if (setting.status === 'enabled' && setting.shortcut === '') {
           setting.status = 'error'
         }
-        chrome.storage.local.set({ [setting.key]: setting });
-      } else if(setting.status === 'enabled' && setting.shortcut === '') {
+        chrome.storage.local.set({ [setting.key]: setting })
+      } else if (setting.status === 'enabled' && setting.shortcut === '') {
         setting.status = 'error'
         chrome.storage.local.set({ [setting.key]: setting })
       }
@@ -36,7 +82,7 @@ async function refreshStorage() {
     let bindingFailures = Object.values(settings)
       .filter(({ status }) => status === 'error')
       .map(({ key }) => `${key}`)
-      .join(', ');
+      .join(', ')
     if (bindingFailures.length > 0) {
       addErrorMessage(`Could not bind the following shortcuts:\n${bindingFailures}.\nYou can set it manually at <a href="chrome://extensions/shortcuts">chrome://extensions/shortcuts</a>.`)
     }
@@ -87,14 +133,28 @@ function makeHandleSettingChange(key) {
 
     const value = event.target.checked
     const setting = await chrome.storage.local.get(key)
-/*    let commandKey = await chrome.commands.getAll()
-    commandKey = commandKey.filter(({ name }) => name === key)[0]*/
+    /*    let commandKey = await chrome.commands.getAll()
+        commandKey = commandKey.filter(({ name }) => name === key)[0]*/
     // if (setting[key].status !== 'error') {
-      setting[key].status = value ? 'enabled' : 'disabled'
-      await chrome.storage.local.set({ [key]: setting[key] })
+    setting[key].status = value ? 'enabled' : 'disabled'
+    await chrome.storage.local.set({ [key]: setting[key] })
     // }
     return refreshStorage()
   }
+}
+
+async function saveConfig() {
+  clearMessages()
+  let config;
+  try {
+    config = jsonEditor.get()
+  } catch (e) {
+    addErrorMessage(`Failed to parse configuration. Error: ${e}`)
+    return
+  }
+  chrome.storage.local.set({ RequestConfiguration: config })
+    .then(refreshStorage)
+    .catch((error) => addErrorMessage(`Failed to save configuration. Error: ${error}`))
 }
 
 $(document).ready(async function () {
@@ -106,9 +166,16 @@ $(document).ready(async function () {
     $(`#settings-form input[name='text-${key}']:checkbox`).on('change', makeHandleSettingChange(key))
   })
 
-  $('body').on('click', 'a', function(){
-    chrome.tabs.create({url: $(this).attr('href')});
-    return false;
-  });
+  $('body').on('click', 'a', function () {
+    chrome.tabs.create({ url: $(this).attr('href') })
+    return false
+  })
+
+  $('#resetConfig').on('click', async function () {
+    jsonEditor.set(defaultConfigurations)
+    await saveConfig()
+  })
+
+  $('#saveConfig').on('click', saveConfig)
   return refreshStorage()
 })

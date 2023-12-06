@@ -1,8 +1,10 @@
 <html>
 <head>
     <script src="/scripts/jquery.js"></script>
+    <script src="/popup/jsoneditor.min.js"></script>
     <script src="/popup/popup.js" type="module"></script>
     <link rel="stylesheet" href="/popup/popup.css"/>
+    <link rel="stylesheet" href="/popup/jsoneditor.min.css"/>
 </head>
 <body>
 <h1 class="extension-title">LeafLLM: an AI-powered Overleaf</h1>
@@ -57,5 +59,14 @@
     </div>
 </div>
 <div id="message-box" class="message-box"></div>
+<div id="configuration-form" class="form-container">
+    <div class="settings-text">Advanced Configuration</div>
+    <!-- JSON Editor Container -->
+    <div id="json-editor" style="height: 300px;"></div>
+    <div class="btn-container">
+        <button class="submit btn" id="saveConfig">Save config</button>
+        <button class="clear btn" id="resetConfig">Reset config</button>
+    </div>
+</div>
 </body>
 </html>

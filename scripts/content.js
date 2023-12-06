@@ -6,14 +6,8 @@ class OpenAIAPI {
     this.apiKey = apiKey
   }
 
-  query(endpoint, data) {
+  query(url, data) {
     return new Promise((resolve, reject) => {
-      const url = `https://api.openai.com/v1/${endpoint}`
-
-      if (!data.model) data.model = OpenAIAPI.defaultModel
-      if (!data.n) data.n = 1
-      if (!data.temperature) data.temperature = 0.5
-
       const xhr = new XMLHttpRequest()
       xhr.open('POST', url, true)
       xhr.setRequestHeader('Content-Type', 'application/json')
@@ -44,40 +38,13 @@ class OpenAIAPI {
     })
   }
 
-  async completeText(text) {
-    const data = {
-      max_tokens: 512,
-      messages: [
-        { role: 'system', content: 'You are an assistant in a Latex editor that continues the given text. No need to rewrite the given text' },
-        { role: 'user', 'content': text }
-      ],
-    }
-
-    return this.query('chat/completions', data)
-      .then(result => result[0]['message'].content)
-  }
-
-  async improveText(text) {
-    const data = {
-      messages: [
-        { role: 'system', content: 'You are an assistant in a Latex editor' },
-        { role: 'user', 'content': 'Improve the following text:\n'+text }],
-    }
-
-    return this.query('chat/completions', data)
-      .then(result => result[0]['message'].content)
-  }
-
-  async ask(text) {
-    const data = {
-      max_tokens: 512,
-      messages: [
-        { role: 'system', content: 'You are an assistant in a Latex editor. Answer questions without introduction/explanations' },
-        { role: 'user', 'content': text }
-      ],
-    }
-
-    return this.query('chat/completions', data)
+  async act(command, text) {
+    let conf = (await chrome.storage.local.get('RequestConfiguration')).RequestConfiguration.openai
+    let request = Object.assign({}, conf.base)
+    let url = conf.url
+    Object.assign(request, conf[command])
+    request.messages.push({ role: 'user', 'content': text })
+    return this.query(url, request)
       .then(result => result[0]['message'].content)
   }
 }
@@ -113,7 +80,7 @@ async function improveTextHandler(openAI) {
   const selection = window.getSelection()
   const selectedText = selection.toString()
   if (!selectedText) return
-  const editedText = await openAI.improveText(selectedText)
+  const editedText = await openAI.act('Improve', selectedText)
   const commentedText = commentText(selectedText)
   replaceSelectedText(commentedText + '\n' + editedText, selection)
 }
@@ -123,7 +90,7 @@ async function completeTextHandler(openAI) {
   const selection = window.getSelection()
   const selectedText = selection.toString()
   if (!selectedText) return
-  const editedText = (await openAI.completeText(selectedText)).trimStart()
+  const editedText = (await openAI.act('Complete', selectedText)).trimStart()
   replaceSelectedText(selectedText + '\n' + editedText, selection)
 }
 
@@ -132,7 +99,7 @@ async function askHandler(openAI) {
   const selection = window.getSelection()
   const selectedText = selection.toString()
   if (!selectedText) return
-  const editedText = (await openAI.ask(selectedText)).trimStart()
+  const editedText = (await openAI.act('Ask', selectedText)).trimStart()
   replaceSelectedText(editedText, selection)
 }
 
