@@ -17,6 +17,41 @@ Just go to the [extension's page](https://chrome.google.com/webstore/detail/leaf
 ## Configuration
 The plugin can be configured by clicking the plugin button in the Chrome toolbar. It requires inserting an API key from [OpenAI](https://platform.openai.com/account/api-keys). You also need to choose which tools you wish to enable.
 
+If you feel advanced, you can also change the request JSON sent to OpenAI and also the base URL.
+To do that, go to the 'Advance Configuration' component in the configuration page. By default, the value is 
+```json
+{
+  openai: {
+    url: 'https://api.openai.com/v1/chat/completions',
+    base: {
+      n: 1,
+      temperature: 0.5,
+      model: 'gpt-3.5-turbo'
+    },
+    Complete: {
+      max_tokens: 512,
+      messages: [{
+        role: 'system',
+        content: 'You are an assistant in a Latex editor that continues the given text. No need to rewrite the given text'
+      }]
+    },
+    Improve: {
+      messages: [{
+        role: 'system',
+        content: 'You are an assistant in a Latex editor that improves the given text'
+      }]
+    },
+    Ask: {
+      messages: [{
+        role: 'system',
+        content: 'You are an assistant in a Latex editor. Answer questions without introduction/explanations'
+      }]
+    }
+  }
+}
+```
+Base is the default configuration which is overridden by the specific command configuration.
+
 ## Usage
 These are the tools that are currently available:
 
