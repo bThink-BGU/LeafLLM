@@ -103,8 +103,8 @@ Entry 7 & Entry 8 & Entry 9\\
 \end{table}
 ```
 
-## Connecting vLLM Models
-It is possible to use also locally deployed LLM models, as long as they support OpenAI Chat Completion API. vLLM models support this API (see [here](https://docs.vllm.ai/en/latest/getting_started/quickstart.html#using-openai-chat-api-with-vllm)).
+## Using non-GPT Models
+Other LLM deployments/models are supported as long as they can be accessed via OpenAI Chat Completion API. Some examples: [vLLM models](https://docs.vllm.ai/en/latest/getting_started/quickstart.html#using-openai-chat-api-with-vllm), [LLAMA models](https://github.com/c0sogi/llama-api#usage-chat-completion), and [easyLLM](https://philschmid.github.io/easyllm/examples/chat-completion-api/).
 
 Use the plugin's JSON editor to change the URL and the model. See [Issue #8](https://github.com/bThink-BGU/LeafLLM/issues/8) for further details.
 
