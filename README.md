@@ -103,6 +103,11 @@ Entry 7 & Entry 8 & Entry 9\\
 \end{table}
 ```
 
+## Connecting vLLM Models
+It is possible to use also locally deployed LLM models, as long as they support OpenAI Chat Completion API. vLLM models support this API (see [here](https://docs.vllm.ai/en/latest/getting_started/quickstart.html#using-openai-chat-api-with-vllm)).
+
+Use the plugin's JSON editor to change the URL and the model. See [Issue #8](https://github.com/bThink-BGU/LeafLLM/issues/8) for further details.
+
 ## Issues
 If nothing happens when you use the plugin, verify that the plugin's shortcuts are not in conflict with other plugins' shortcuts [here](chrome://extensions/shortcuts).
 
