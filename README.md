@@ -21,30 +21,30 @@ If you feel advanced, you can also change the request JSON sent to OpenAI and al
 To do that, go to the 'Advance Configuration' component in the configuration page. By default, the value is 
 ```json
 {
-  openai: {
-    url: 'https://api.openai.com/v1/chat/completions',
-    base: {
-      n: 1,
-      temperature: 0.5,
-      model: 'gpt-3.5-turbo'
+  "openai": {
+    "url": "https://api.openai.com/v1/chat/completions",
+    "base": {
+      "n": 1,
+      "temperature": 0.5,
+      "model": "gpt-3.5-turbo"
     },
-    Complete: {
-      max_tokens: 512,
-      messages: [{
-        role: 'system',
-        content: 'You are an assistant in a Latex editor that continues the given text. No need to rewrite the given text'
+    "Complete": {
+      "max_tokens": 512,
+      "messages": [{
+        "role": "system",
+        "content": "You are an assistant in a Latex editor that continues the given text. No need to rewrite the given text"
       }]
     },
-    Improve: {
-      messages: [{
-        role: 'system',
-        content: 'You are an assistant in a Latex editor that improves the given text'
+    "Improve": {
+      "messages": [{
+        "role": "system",
+        "content": "You are an assistant in a Latex editor that improves the given text"
       }]
     },
-    Ask: {
-      messages: [{
-        role: 'system',
-        content: 'You are an assistant in a Latex editor. Answer questions without introduction/explanations'
+    "Ask": {
+      "messages": [{
+        "role": "system",
+        "content": "You are an assistant in a Latex editor. Answer questions without introduction/explanations"
       }]
     }
   }
