@@ -78,7 +78,7 @@ Other LLM deployments/models are supported as long as they can be accessed via O
 Use the plugin's JSON editor to change the URL and the model. See [Issue #8](https://github.com/bThink-BGU/LeafLLM/issues/8) for further details.
 
 ## Issues
-If nothing happens when you use the plugin, verify that the plugin's shortcuts are not in conflict with other plugins' shortcuts. To do so, go to [chrome://extensions/shortcuts](chrome://extensions/shortcuts).
+If nothing happens when you use the plugin, verify that the plugin's shortcuts are not in conflict with other plugins' shortcuts. To do so, go to `chrome://extensions/shortcuts`.
 
 If you encounter any problem/question, please open an issue in the project's repository.
 
