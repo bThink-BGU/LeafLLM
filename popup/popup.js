@@ -29,7 +29,56 @@ const defaultConfigurations = {
   }
 }
 
-const apiKeyRegex = /sk-[a-zA-Z0-9]{48}/
+// Changing the class here requires changing scripts/content.js
+class OpenAIAPI {
+  constructor(apiKey) {
+    this.apiKey = apiKey
+  }
+
+  query(url, data) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open('POST', url, true)
+      xhr.setRequestHeader('Content-Type', 'application/json')
+      xhr.setRequestHeader('Authorization', `Bearer ${this.apiKey}`)
+      xhr.onerror = function () {
+        reject('Failed to query OpenAI API: network error.')
+      }
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          let jsonResponse
+          try {
+            jsonResponse = JSON.parse(xhr.responseText)
+          } catch (e) {
+            reject('Failed to query OpenAI API, cannot parse response:\n' + e + '\n' + xhr.responseText)
+            return
+          }
+          if (jsonResponse.hasOwnProperty('choices')) {
+            resolve(jsonResponse.choices)
+          } else {
+            reject('Failed to query OpenAI API: invalid response: ' + jsonResponse)
+          }
+        } else {
+          reject('Failed to query OpenAI API: invalid status: ' + xhr.status + ' - ' + xhr.responseText)
+        }
+      }
+
+      xhr.send(JSON.stringify(data))
+    })
+  }
+
+  async act(command, text) {
+    let conf = (await chrome.storage.local.get('RequestConfiguration')).RequestConfiguration.openai
+    let request = Object.assign({}, conf.base)
+    let url = conf.url
+    Object.assign(request, conf[command])
+    request.messages.push({ role: 'user', 'content': text })
+    return this.query(url, request)
+      .then(result => result[0]['message'].content)
+  }
+}
+
+
 const jsonEditor = createJsonEditor()
 
 function createJsonEditor() {
@@ -104,14 +153,25 @@ async function handleAPITokenSet(event) {
   const openAIAPIKey = input.val()
   input.val('')
 
-  if (!openAIAPIKey || !apiKeyRegex.test(openAIAPIKey)) {
+  if (!openAIAPIKey) {
     addErrorMessage('Invalid API Token.')
+    return
+  }
+  try {
+    await validateAPIKey(openAIAPIKey)
+  }catch (e) {
+    addErrorMessage(`Failed to validate API Token. Error: ${e}`)
     return
   }
 
   chrome.storage.local.set({ openAIAPIKey })
     .then(refreshStorage)
     .catch((error) => addErrorMessage(`Failed to remove API Token. Error: ${error}`))
+}
+
+async function validateAPIKey(apiKey) {
+  const openAI = new OpenAIAPI(apiKey)
+  return openAI.act('Ask', 'write a random latex command. do not explain it.')
 }
 
 async function handleAPITokenClear(event) {

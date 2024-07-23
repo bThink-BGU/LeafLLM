@@ -1,7 +1,5 @@
-
+// Changing the class here requires changing popup/popup.js
 class OpenAIAPI {
-  static defaultModel = 'gpt-3.5-turbo'
-
   constructor(apiKey) {
     this.apiKey = apiKey
   }
