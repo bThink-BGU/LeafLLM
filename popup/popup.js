@@ -17,7 +17,7 @@ const defaultConfigurations = {
     Improve: {
       messages: [{
         role: 'system',
-        content: 'You are an assistant in a Latex editor that improves the given text'
+        content: 'You are an assistant in a Latex editor, usually used for writing academic papers. Style and improves the given text.'
       }]
     },
     Ask: {
