@@ -11,19 +11,19 @@ const defaultConfigurations = {
       max_tokens: 512,
       messages: [{
         role: 'system',
-        content: 'You are an assistant in a Latex editor that continues the given text. No need to rewrite the given text'
+        content: 'You are an assistant in a Latex editor that continues the given text. No need to rewrite the given text.'
       }]
     },
     Improve: {
       messages: [{
         role: 'system',
-        content: 'You are an assistant in a Latex editor that improves the given text'
+        content: 'You are an assistant in a Latex editor, usually used for writing academic papers. Style and improves the given text.'
       }]
     },
     Ask: {
       messages: [{
         role: 'system',
-        content: 'You are an assistant in a Latex editor. Answer questions without introduction/explanations'
+        content: 'You are an assistant in a Latex editor. Answer questions without introduction/explanations.'
       }]
     }
   }
